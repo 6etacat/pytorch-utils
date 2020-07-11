@@ -1,1 +1,3 @@
-# pytorch-utils
+# Research Utilities
+
+Common utility code for research. 
