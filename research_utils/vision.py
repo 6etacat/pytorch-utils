@@ -1,9 +1,10 @@
-__all__ = ['Compose']
+import random
 
 class Compose(object):
     """Composes several transforms together.
     Args:
         transforms (list of ``Transform`` objects): list of transforms to compose.
+        dim (int): dimension to stack if applying sequences. Default is not stacking. 
     Example:
         >>> Compose([
         >>>     transforms.CenterCrop(10),
@@ -21,18 +22,19 @@ class Compose(object):
         else:
             return self.apply_img(inpt)
 
-    def apply_img(self, img):
+    def apply_img(self, img, seed=None):
+        if seed:
+            random.seed(seed)
         for t in self.transforms:
             img = t(img)
         return img
 
     def apply_sequence(self, seq):
-        output = list(map(self.apply_img, seq))
+        seed = random.randint(0,2**32)
+        output = list(map(self.apply_img, seq, seed))
         if self.dim is not None:
             assert isinstance(self.dim, int)
             output = torch.stack(output, dim=self.dim)
-        for t in self.transforms:
-            t.reset_params()
         return output
 
     def __repr__(self):
@@ -42,3 +44,5 @@ class Compose(object):
             format_string += '    {0}'.format(t)
         format_string += '\n)'
         return format_string
+
+__all__ = ['Compose']
